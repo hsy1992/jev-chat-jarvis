@@ -175,7 +175,7 @@ QQ / X / Feishu --(accessibility nodes)--> Capture recent messages
 <summary><b>Adding support for another chat app</b></summary>
 
 1. Implement `ChatAppAdapter` in `capture/ChatAppAdapter.kt`. Set `pkg` to the app's package name. Have `extract(root, res)` read the title and message list from the accessibility tree, returning `Msg(side, text)` entries where `side` is `me` or `other`. Return `null` when the current window is not a conversation.
-2. Add an entry to `adapters` in `capture/ChatCaptureService.kt`.
+2. Add an entry to `adapters` in `capture/MyAccessibilityService.kt`.
 3. Assessment, reply generation, the overlay, and text insertion work without further changes.
 
 Start with `adb shell uiautomator dump` to see what the target app exposes. The existing adapters illustrate how to handle different capture patterns:
@@ -203,7 +203,7 @@ Requires JDK 17 and the Android SDK (platform 35 / build-tools 35).
 ```
 
 - `app/`: Android app written in Kotlin using traditional Views.
-  - `capture/`: Accessibility capture, including per-app adapters in `ChatAppAdapter.kt`, dispatch and foreground keep-alive in `ChatCaptureService.kt`, and screenshots and offline recognition in `ocr/`.
+  - `capture/`: Accessibility capture, including per-app adapters in `ChatAppAdapter.kt`, dispatch and foreground keep-alive in `MyAccessibilityService.kt`, and screenshots and offline recognition in `ocr/`.
   - `jev/`: Jev client and question sets. `overlay/`: Floating UI. `core/`: Configuration and data models, including knowledge base storage and context assembly in `core/kb/`.
   - `KnowledgeActivity`: Knowledge base management screen for notes and contacts.
 - `tools/jev/`: Jev question sets and calibration tooling in Python.

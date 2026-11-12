@@ -37,6 +37,7 @@
 | X / Twitter 私信 | ✅ 全链路 | 解析 Compose 节点的 content-desc | 12.25 实测，中文界面；英文界面未验 |
 | 飞书 / Lark | ✅ OCR 兜底（真机验证） | 无障碍读气泡矩形 + ML Kit 离线 OCR 识别正文 | 正文自绘不在无障碍树里，1.3 起对每个气泡矩形做 OCR；我/对方按已读状态判 |
 | WhatsApp | 🧪 一对一聊天 | 无障碍读节点 | 只读一对一聊天，群聊不读，不截屏；对方说英文时候选回复用英文；读取规则来自 [@smgonthebeat](https://github.com/smgonthebeat)（#73），按 WhatsApp 2.26.38.73 录屏数据验证 |
+| 微信 Android | 🧪 8.0.80 已验证手动读树与导入草稿 | 根据聊天列表、输入框和消息行定位 `id/bkl`，结合头像及列表内位置分边 | 标题未公开或部分方向未确认时，可从读树预览进入「校正并分析」。配置会话白名单时仍需核对标题 |
 | 其它未适配 App | ✅ 手动 | 悬浮窗菜单「截屏识别一次」整屏 OCR | 不自动、不分我/对方（全部当作对方所说并在面板标注）；隐藏界面内容或禁止截屏的 App 不支持 |
 | macOS / Windows（独立项目） | ✅ 已提供 | 见各自仓库说明 | [macOS 版](https://github.com/jev-chat/jev-chat-jarvis-mac) · [Windows 版](https://github.com/jev-chat/jev-chat-windows) |
 | 网页 | ⏳ 规划 | — | 尚无网页版 |
@@ -94,9 +95,20 @@ adb install -r apk/jev-assistant-v1.7-release.apk
 ### 采集与 OCR
 
 - 一个 App 一个适配器，服务按前台包名分发，适配器只负责把当前窗口变成「标题 + 消息列表」。
+- 聊天卡片右上角「读树」或悬浮球菜单「读取内容树」会重新读取当前窗口，预览消息和发送方。会话和发送方可确认时点「分析读取结果」。微信标题未公开或有未确认消息时，点「校正并分析」，在独立草稿中核对后提交。
 - 无障碍树里没有正文时，对支持的聊天 App 自动截屏并用 ML Kit 中文离线模型识别，不上传图片、不需要 Google 服务。
 - 截屏有限频和失败退避，不会每秒连拍；识别时会躲开自己的悬浮窗。
 - 未适配的 App 可在悬浮窗菜单里手动触发「截屏识别一次」。
+
+### 分享到悬浮窗
+
+在其他应用的系统分享菜单选择「分享到 Jev」，可导入文本或单张截图。截图使用本地 OCR。预览中每行保留一条消息，标为「我」或「对方」，点「确认并分析」后可复制生成的回复。
+
+每次分享建立独立任务，可用「上一项／下一项」切换。分享分析无需无障碍权限，未授权悬浮窗时会在应用内打开。已收起的任务可从首页「分享任务」重新打开，任务在本次应用进程内保留。微信能分享哪些内容取决于它实际提供的系统分享选项。
+
+## 开发规划
+
+下一阶段的[产品设计、技术架构与实施验收](docs/README.md)已整理为独立文档，涵盖截图／文本导入、OCR 校正、回复降级、上下文与联系人、群聊和多模态扩展。这些内容属于待实施规划，当前支持能力仍以本文平台表及对应版本实测记录为准。
 
 ## 常见问题
 
@@ -164,7 +176,7 @@ adb install -r apk/jev-assistant-v1.7-release.apk
 <summary><b>适配一个新的聊天 App</b></summary>
 
 1. 在 `capture/ChatAppAdapter.kt` 实现 `ChatAppAdapter`：`pkg` 是包名，`extract(root, res)` 从无障碍树取出标题和消息列表（`Msg(side, text)`，`side` 为 `me` / `other`），不在聊天窗时返回 `null`。
-2. 在 `capture/ChatCaptureService.kt` 的 `adapters` 加一行。
+2. 在 `capture/MyAccessibilityService.kt` 的 `adapters` 加一行。
 3. 判断、候选、悬浮窗、填入都不用动。
 
 先用 `adb shell uiautomator dump` 看目标 App 暴露了什么，已有四个专用适配器，另有未适配 App 的手动 OCR 入口：
@@ -192,11 +204,12 @@ JDK 17 + Android SDK（platform 35 / build-tools 35）。
 ```
 
 - `app/` — Android 应用（Kotlin，传统 View）
-  - `capture/` 无障碍采集：`ChatAppAdapter.kt` 各 App 适配器、`ChatCaptureService.kt` 分发服务、前台保活、`ocr/` 截屏与离线识别
+  - `capture/` 无障碍采集：`ChatAppAdapter.kt` 各 App 适配器、`MyAccessibilityService.kt` 分发服务、前台保活、`ocr/` 截屏与离线识别
   - `jev/` Jev 客户端与题目集 · `overlay/` 悬浮窗 · `core/` 配置与数据模型（含 `core/kb/` 知识库存储与上下文构建）
   - `KnowledgeActivity` 知识库管理页（笔记 / 联系人）
 - `tools/jev/` — Jev 题目集与校准脚手架（Python）
 - `docs/` — 设计与验收文档
+  - `docs/wechat-a11y-re.md` — 微信 8.0.80 无障碍对抗逆向记录（服务白名单、节点清空 / 假信息 / 吞点击 / `FLAG_SECURE`）
 - `apk/` — 签好名的 release 包
 
 </details>

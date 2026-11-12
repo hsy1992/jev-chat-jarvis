@@ -163,7 +163,7 @@ Hình minh họa ranh giới dữ liệu: đọc giao diện chat và OCR đư�
 <summary><b>Tích hợp một ứng dụng chat mới</b></summary>
 
 1. Trong `capture/ChatAppAdapter.kt`, triển khai `ChatAppAdapter`: `pkg` là tên gói; `extract(root, res)` lấy tiêu đề và danh sách tin nhắn từ cây trợ năng (`Msg(side, text)`, trong đó `side` là `me` / `other`); trả về `null` nếu không ở trong cửa sổ chat.
-2. Thêm một dòng vào `adapters` trong `capture/ChatCaptureService.kt`.
+2. Thêm một dòng vào `adapters` trong `capture/MyAccessibilityService.kt`.
 3. Không cần thay đổi phần phân tích, câu trả lời ứng viên, cửa sổ nổi hoặc chức năng điền lại.
 
 Trước tiên hãy dùng `adb shell uiautomator dump` để xem ứng dụng đích cung cấp những gì; hiện có bốn adapter chuyên biệt, ngoài ra còn có lối vào OCR thủ công cho các ứng dụng chưa được hỗ trợ:
@@ -191,7 +191,7 @@ JDK 17 + Android SDK (platform 35 / build-tools 35).
 ```
 
 - `app/` — ứng dụng Android (Kotlin, View cổ điển)
-  - `capture/` thu thập bằng trợ năng: `ChatAppAdapter.kt` chứa adapter cho từng ứng dụng, `ChatCaptureService.kt` là dịch vụ phân phối, giữ tiến trình ở tiền cảnh, `ocr/` chụp màn hình và nhận diện ngoại tuyến
+  - `capture/` thu thập bằng trợ năng: `ChatAppAdapter.kt` chứa adapter cho từng ứng dụng, `MyAccessibilityService.kt` là dịch vụ phân phối, giữ tiến trình ở tiền cảnh, `ocr/` chụp màn hình và nhận diện ngoại tuyến
   - `jev/` máy khách và bộ câu hỏi Jev · `overlay/` cửa sổ nổi · `core/` cấu hình và mô hình dữ liệu (gồm `core/kb/` lưu trữ cơ sở tri thức và xây dựng ngữ cảnh)
   - `KnowledgeActivity` trang quản lý cơ sở tri thức (ghi chú / liên hệ)
 - `tools/jev/` — bộ câu hỏi và bộ công cụ hiệu chuẩn cho Jev (Python)

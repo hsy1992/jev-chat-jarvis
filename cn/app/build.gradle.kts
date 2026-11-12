@@ -16,11 +16,11 @@ val releaseProps = Properties().apply {
 }
 
 android {
-    namespace = "com.jev.probe"
+    namespace = "com.dianming.phoneapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.jev.probe"
+        applicationId = "com.dianming.phoneapp"
         minSdk = 30
         targetSdk = 35
         versionCode = 8
